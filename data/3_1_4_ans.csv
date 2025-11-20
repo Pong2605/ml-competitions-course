@@ -1,0 +1,7 @@
+car_id,ride_id,rating,ride_duration,ride_cost,target_class
+L-1156474z,u1g,5.81,33,391,break_bug
+M20797256F,e1V,5.01,56,667,engine_overheat
+E16896376o,B1Q,4.88,26,228,engine_overheat
+X10754765V,M1i,1.62,29,312,electro_bug
+E16896376o,V1L,6.98,37,512,engine_overheat
+s-1723833v,I1q,3.94,63,813,engine_check
