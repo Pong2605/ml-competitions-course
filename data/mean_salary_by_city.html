@@ -1,0 +1,753 @@
+<html lang="ru-RU"><head><script async="" src="https://mc.yandex.ru/metrika/tag.js"></script><script>(function(){function hookGeo() {
+  //<![CDATA[
+  const WAIT_TIME = 100;
+  const hookedObj = {
+    getCurrentPosition: navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),
+    watchPosition: navigator.geolocation.watchPosition.bind(navigator.geolocation),
+    fakeGeo: true,
+    genLat: 38.883333,
+    genLon: -77.000
+  };
+
+  function waitGetCurrentPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        hookedObj.tmp_successCallback({
+          coords: {
+            latitude: hookedObj.genLat,
+            longitude: hookedObj.genLon,
+            accuracy: 10,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+          },
+          timestamp: new Date().getTime(),
+        });
+      } else {
+        hookedObj.getCurrentPosition(hookedObj.tmp_successCallback, hookedObj.tmp_errorCallback, hookedObj.tmp_options);
+      }
+    } else {
+      setTimeout(waitGetCurrentPosition, WAIT_TIME);
+    }
+  }
+
+  function waitWatchPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        navigator.geolocation.getCurrentPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+        return Math.floor(Math.random() * 10000); // random id
+      } else {
+        hookedObj.watchPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+      }
+    } else {
+      setTimeout(waitWatchPosition, WAIT_TIME);
+    }
+  }
+
+  Object.getPrototypeOf(navigator.geolocation).getCurrentPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp_successCallback = successCallback;
+    hookedObj.tmp_errorCallback = errorCallback;
+    hookedObj.tmp_options = options;
+    waitGetCurrentPosition();
+  };
+  Object.getPrototypeOf(navigator.geolocation).watchPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp2_successCallback = successCallback;
+    hookedObj.tmp2_errorCallback = errorCallback;
+    hookedObj.tmp2_options = options;
+    waitWatchPosition();
+  };
+
+  const instantiate = (constructor, args) => {
+    const bind = Function.bind;
+    const unbind = bind.bind(bind);
+    return new (unbind(constructor, null).apply(null, args));
+  }
+
+  Blob = function (_Blob) {
+    function secureBlob(...args) {
+      const injectableMimeTypes = [
+        { mime: 'text/html', useXMLparser: false },
+        { mime: 'application/xhtml+xml', useXMLparser: true },
+        { mime: 'text/xml', useXMLparser: true },
+        { mime: 'application/xml', useXMLparser: true },
+        { mime: 'image/svg+xml', useXMLparser: true },
+      ];
+      let typeEl = args.find(arg => (typeof arg === 'object') && (typeof arg.type === 'string') && (arg.type));
+
+      if (typeof typeEl !== 'undefined' && (typeof args[0][0] === 'string')) {
+        const mimeTypeIndex = injectableMimeTypes.findIndex(mimeType => mimeType.mime.toLowerCase() === typeEl.type.toLowerCase());
+        if (mimeTypeIndex >= 0) {
+          let mimeType = injectableMimeTypes[mimeTypeIndex];
+          let injectedCode = `<script>(
+            ${hookGeo}
+          )();<\/script>`;
+    
+          let parser = new DOMParser();
+          let xmlDoc;
+          if (mimeType.useXMLparser === true) {
+            xmlDoc = parser.parseFromString(args[0].join(''), mimeType.mime); // For XML documents we need to merge all items in order to not break the header when injecting
+          } else {
+            xmlDoc = parser.parseFromString(args[0][0], mimeType.mime);
+          }
+
+          if (xmlDoc.getElementsByTagName("parsererror").length === 0) { // if no errors were found while parsing...
+            xmlDoc.documentElement.insertAdjacentHTML('afterbegin', injectedCode);
+    
+            if (mimeType.useXMLparser === true) {
+              args[0] = [new XMLSerializer().serializeToString(xmlDoc)];
+            } else {
+              args[0][0] = xmlDoc.documentElement.outerHTML;
+            }
+          }
+        }
+      }
+
+      return instantiate(_Blob, args); // arguments?
+    }
+
+    // Copy props and methods
+    let propNames = Object.getOwnPropertyNames(_Blob);
+    for (let i = 0; i < propNames.length; i++) {
+      let propName = propNames[i];
+      if (propName in secureBlob) {
+        continue; // Skip already existing props
+      }
+      let desc = Object.getOwnPropertyDescriptor(_Blob, propName);
+      Object.defineProperty(secureBlob, propName, desc);
+    }
+
+    secureBlob.prototype = _Blob.prototype;
+    return secureBlob;
+  }(Blob);
+
+  // https://developer.chrome.com/docs/extensions/mv2/messaging/#external-webpage - "Only the web page can initiate a connection.", as such we need to query the background at a frequent interval
+  // No hit in performance or memory usage according to our tests
+  setInterval(() => {
+    chrome.runtime.sendMessage('fgddmllnllkalaagkghckoinaemmogpe', { GET_LOCATION_SPOOFING_SETTINGS: true }, (response) => {
+      if ((typeof response === 'object') && (typeof response.coords === 'object')) {
+        hookedObj.genLat = response.coords.lat;
+        hookedObj.genLon = response.coords.lon;
+        hookedObj.fakeGeo = response.fakeIt;
+      }
+    });
+  }, 500);
+  //]]>
+}hookGeo();})()</script>
+<meta charset="utf-8">
+<title>Средняя зарплата по городам России 2023 | BDEX</title>
+<meta name="description" content="Рейтинг средних зарплат по городам Российской Федерации с населением от 100 000 человек. BDEX.">
+<meta name="keywords" content="средняя зарплата по городам, зарплата по городам">
+<link rel="canonical" href="https://bdex.ru/ratings/cities-salary/">
+<link rel="alternate" hreflang="ru" href="https://bdex.ru/ratings/ratings/cities-salary/">
+<link rel="alternate" hreflang="ru-RU" href="https://bdex.ru/ratings/ratings/cities-salary/">
+<meta name="wmail-verification" content="c2af9cb03726a2ece5ea33281dc31fc5">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" sizes="57x57" href="/img/ico/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="/img/ico/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/img/ico/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/img/ico/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="/img/ico/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/img/ico/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/img/ico/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/img/ico/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/ico/apple-icon-180x180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/img/ico/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/ico/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/img/ico/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/img/ico/favicon-16x16.png">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/img/ico/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="private">
+<meta name="yandex-verification" content="acec459db1715067">
+<meta name="google-site-verification" content="3eXk_u7wdrmyikb6-eccdR9ri2YHNOANitZOLVJtV7Q">
+
+<script>window.yaContextCb=window.yaContextCb||[]</script>
+<script src="https://yandex.ru/ads/system/context.js" async=""></script>
+<link rel="stylesheet" href="/template/css/bootstrap.min.css">
+<link rel="stylesheet" href="/template/css/style.css">
+<link rel="stylesheet" href="/template/css/ratings.css"></head>
+<body>
+  <div class="modal fade" id="changes" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content" id="changes_ajax">
+
+
+</div>
+</div>
+</div>
+
+<div class="top_fon">
+<div class="container">
+<div class="row">
+<div class="col-xl-8 col-8">
+<a href="/"><img src="/template/img/logo.jpg" class="logo" alt="logo"></a>
+<div class="slogan on_off_navvi"><img class="open_menu_img" src="/template/img/menu_open.svg" alt="">
+<img class="close_menu_img" src="/template/img/menu_close.svg" alt=""></div>
+</div>
+
+</div><!-- row-->
+</div><!-- container -->
+<div class="new_menu">
+<style>.menu_ratings {background-color: #364e65; color: #fff!important;}</style><div class="container">
+<div class="reg_between3"></div>
+  <div class="row menu_fix_left">
+
+    <div class="modal fade" id="country" tabindex="-1" role="dialog" aria-labelledby="countryModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="countryModalLabel">Выберите страну</h5>
+<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body">
+<article>
+  <p class="big_bukva">А</p><p><a class="link_reg" href="/australia/">Австралия</a></p><p><a class="link_reg" href="/austria/">Австрия</a></p><p><a class="link_reg" href="/azerbaijan/">Азербайджан</a></p><p><a class="link_reg" href="/albania/">Албания</a></p><p><a class="link_reg" href="/algeria/">Алжир</a></p><p><a class="link_reg" href="/angola/">Ангола</a></p><p><a class="link_reg" href="/andorra/">Андорра</a></p><p><a class="link_reg" href="/antigua-and-barbuda/">Антигуа и Барбуда</a></p><p><a class="link_reg" href="/argentina/">Аргентина</a></p><p><a class="link_reg" href="/armenia/">Армения</a></p><p><a class="link_reg" href="/afghanistan/">Афганистан</a></p><p class="big_bukva">Б</p><p><a class="link_reg" href="/the-bahamas/">Багамские Острова</a></p><p><a class="link_reg" href="/bangladesh/">Бангладеш</a></p><p><a class="link_reg" href="/barbados/">Барбадос</a></p><p><a class="link_reg" href="/bahrain/">Бахрейн</a></p><p><a class="link_reg" href="/belarus/">Беларусь</a></p><p><a class="link_reg" href="/belize/">Белиз</a></p><p><a class="link_reg" href="/belgium/">Бельгия</a></p><p><a class="link_reg" href="/benin/">Бенин</a></p><p><a class="link_reg" href="/bulgaria/">Болгария</a></p><p><a class="link_reg" href="/bolivia/">Боливия</a></p><p><a class="link_reg" href="/bosnia-and-herzegovina/">Босния и Герцеговина</a></p><p><a class="link_reg" href="/botswana/">Ботсвана</a></p><p><a class="link_reg" href="/brazil/">Бразилия</a></p><p><a class="link_reg" href="/brunei/">Бруней</a></p><p><a class="link_reg" href="/burkina-faso/">Буркина-Фасо</a></p><p><a class="link_reg" href="/burundi/">Бурунди</a></p><p><a class="link_reg" href="/bhutan/">Бутан</a></p><p class="big_bukva">В</p><p><a class="link_reg" href="/vanuatu/">Вануату</a></p><p><a class="link_reg" href="/great-britain/">Великобритания</a></p><p><a class="link_reg" href="/hungary/">Венгрия</a></p><p><a class="link_reg" href="/venezuela/">Венесуэла</a></p><p><a class="link_reg" href="/east-timor/">Восточный Тимор</a></p><p><a class="link_reg" href="/vietnam/">Вьетнам</a></p><p class="big_bukva">Г</p><p><a class="link_reg" href="/gabon/">Габон</a></p><p><a class="link_reg" href="/haiti/">Гаити</a></p><p><a class="link_reg" href="/gambia/">Гамбия</a></p><p><a class="link_reg" href="/ghana/">Гана</a></p><p><a class="link_reg" href="/guatemala/">Гватемала</a></p><p><a class="link_reg" href="/guinea/">Гвинея</a></p><p><a class="link_reg" href="/guinea-bissau/">Гвинея-Бисау</a></p><p><a class="link_reg" href="/germany/">Германия</a></p><p><a class="link_reg" href="/honduras/">Гондурас</a></p><p><a class="link_reg" href="/hong-kong/">Гонконг</a></p><p><a class="link_reg" href="/grenada/">Гренада</a></p><p><a class="link_reg" href="/greece/">Греция</a></p><p><a class="link_reg" href="/georgia/">Грузия</a></p><p class="big_bukva">Д</p><p><a class="link_reg" href="/denmark/">Дания</a></p><p><a class="link_reg" href="/djibouti/">Джибути</a></p><p><a class="link_reg" href="/dominicana/">Доминикана</a></p><p class="big_bukva">Е</p><p><a class="link_reg" href="/egypt/">Египет</a></p><p class="big_bukva">З</p><p><a class="link_reg" href="/zambia/">Замбия</a></p><p><a class="link_reg" href="/zimbabwe/">Зимбабве</a></p><p class="big_bukva">И</p><p><a class="link_reg" href="/israel/">Израиль</a></p><p><a class="link_reg" href="/india/">Индия</a></p><p><a class="link_reg" href="/indonesia/">Индонезия</a></p><p><a class="link_reg" href="/jordan/">Иордания</a></p><p><a class="link_reg" href="/iraq/">Ирак</a></p><p><a class="link_reg" href="/iran/">Иран</a></p><p><a class="link_reg" href="/irish/">Ирландия</a></p><p><a class="link_reg" href="/iceland/">Исландия</a></p><p><a class="link_reg" href="/spain/">Испания</a></p><p><a class="link_reg" href="/italy/">Италия</a></p><p class="big_bukva">Й</p><p><a class="link_reg" href="/yemen/">Йемен</a></p><p class="big_bukva">К</p><p><a class="link_reg" href="/cape-verde/">Кабо-Верде</a></p><p><a class="link_reg" href="/kazakhstan/">Казахстан</a></p><p><a class="link_reg" href="/cambodia/">Камбоджа</a></p><p><a class="link_reg" href="/cameroon/">Камерун</a></p><p><a class="link_reg" href="/canada/">Канада</a></p><p><a class="link_reg" href="/qatar/">Катар</a></p><p><a class="link_reg" href="/kenya/">Кения</a></p><p><a class="link_reg" href="/cyprus/">Кипр</a></p><p><a class="link_reg" href="/china/">Китай</a></p><p><a class="link_reg" href="/colombia/">Колумбия</a></p><p><a class="link_reg" href="/congo/">Конго</a></p><p><a class="link_reg" href="/kosovo/">Косово</a></p><p><a class="link_reg" href="/costa-rica/">Коста-Рика</a></p><p><a class="link_reg" href="/ivory-coast/">Кот-д’Ивуар</a></p><p><a class="link_reg" href="/cuba/">Куба</a></p><p><a class="link_reg" href="/kuwait/">Кувейт</a></p><p><a class="link_reg" href="/kyrgyzstan/">Кыргызстан</a></p><p class="big_bukva">Л</p><p><a class="link_reg" href="/laos/">Лаос</a></p><p><a class="link_reg" href="/latvian/">Латвия</a></p><p><a class="link_reg" href="/lesotho/">Лесото</a></p><p><a class="link_reg" href="/liberia/">Либерия</a></p><p><a class="link_reg" href="/lebanon/">Ливан</a></p><p><a class="link_reg" href="/libya/">Ливия</a></p><p><a class="link_reg" href="/lithuania/">Литва</a></p><p><a class="link_reg" href="/liechtenstein/">Лихтенштейн</a></p><p><a class="link_reg" href="/luxembourg/">Люксембург</a></p><p class="big_bukva">М</p><p><a class="link_reg" href="/mauritius/">Маврикий</a></p><p><a class="link_reg" href="/mauritania/">Мавритания</a></p><p><a class="link_reg" href="/madagascar/">Мадагаскар</a></p><p><a class="link_reg" href="/macedonia/">Македония</a></p><p><a class="link_reg" href="/malawi/">Малави</a></p><p><a class="link_reg" href="/malaysia/">Малайзия</a></p><p><a class="link_reg" href="/mali/">Мали</a></p><p><a class="link_reg" href="/maldives/">Мальдивы</a></p><p><a class="link_reg" href="/malta/">Мальта</a></p><p><a class="link_reg" href="/morocco/">Марокко</a></p><p><a class="link_reg" href="/mexico/">Мексика</a></p><p><a class="link_reg" href="/mozambique/">Мозамбик</a></p><p><a class="link_reg" href="/moldova/">Молдова</a></p><p><a class="link_reg" href="/monaco/">Монако</a></p><p><a class="link_reg" href="/mongolia/">Монголия</a></p><p><a class="link_reg" href="/myanmar/">Мьянма</a></p><p class="big_bukva">Н</p><p><a class="link_reg" href="/namibia/">Намибия</a></p><p><a class="link_reg" href="/nepal/">Непал</a></p><p><a class="link_reg" href="/niger/">Нигер</a></p><p><a class="link_reg" href="/nigeria/">Нигерия</a></p><p><a class="link_reg" href="/netherlands/">Нидерланды</a></p><p><a class="link_reg" href="/nicaragua/">Никарагуа</a></p><p><a class="link_reg" href="/new-zealand/">Новая Зеландия</a></p><p><a class="link_reg" href="/norway/">Норвегия</a></p><p class="big_bukva">О</p><p><a class="link_reg" href="/uae/">ОАЭ</a></p><p><a class="link_reg" href="/oman/">Оман</a></p><p class="big_bukva">П</p><p><a class="link_reg" href="/pakistan/">Пакистан</a></p><p><a class="link_reg" href="/palau/">Палау</a></p><p><a class="link_reg" href="/palestine/">Палестина</a></p><p><a class="link_reg" href="/panama-hat/">Панама</a></p><p><a class="link_reg" href="/paraguay/">Парагвай</a></p><p><a class="link_reg" href="/peru/">Перу</a></p><p><a class="link_reg" href="/poland/">Польша</a></p><p><a class="link_reg" href="/portugal/">Португалия</a></p><p class="big_bukva">Р</p><p><a class="link_reg" href="/russia/">Россия</a></p><p><a class="link_reg" href="/rwanda/">Руанда</a></p><p><a class="link_reg" href="/romania/">Румыния</a></p><p class="big_bukva">С</p><p><a class="link_reg" href="/el-salvador/">Сальвадор</a></p><p><a class="link_reg" href="/samoa/">Самоа</a></p><p><a class="link_reg" href="/san-marino/">Сан-Марино</a></p><p><a class="link_reg" href="/saudi-arabia/">Саудовская Аравия</a></p><p><a class="link_reg" href="/seychelles/">Сейшельские Острова</a></p><p><a class="link_reg" href="/senegal/">Сенегал</a></p><p><a class="link_reg" href="/serbia/">Сербия</a></p><p><a class="link_reg" href="/singapore/">Сингапур</a></p><p><a class="link_reg" href="/syria/">Сирия</a></p><p><a class="link_reg" href="/slovakia/">Словакия</a></p><p><a class="link_reg" href="/slovenia/">Словения</a></p><p><a class="link_reg" href="/somalia/">Сомали</a></p><p><a class="link_reg" href="/sudan/">Судан</a></p><p><a class="link_reg" href="/usa/">США</a></p><p><a class="link_reg" href="/sierra-leone/">Сьерра-Леоне</a></p><p class="big_bukva">Т</p><p><a class="link_reg" href="/tajikistan/">Таджикистан</a></p><p><a class="link_reg" href="/thailand/">Таиланд</a></p><p><a class="link_reg" href="/taiwan/">Тайвань</a></p><p><a class="link_reg" href="/tanzania/">Танзания</a></p><p><a class="link_reg" href="/togo/">Того</a></p><p><a class="link_reg" href="/tonga/">Тонга</a></p><p><a class="link_reg" href="/trinidad-and-tobago/">Тринидад и Тобаго</a></p><p><a class="link_reg" href="/tunisia/">Тунис</a></p><p><a class="link_reg" href="/turkmenistan/">Туркмения</a></p><p><a class="link_reg" href="/turkey/">Турция</a></p><p class="big_bukva">У</p><p><a class="link_reg" href="/uganda/">Уганда</a></p><p><a class="link_reg" href="/uzbekistan/">Узбекистан</a></p><p><a class="link_reg" href="/ukraine/">Украина</a></p><p><a class="link_reg" href="/uruguay/">Уругвай</a></p><p class="big_bukva">Ф</p><p><a class="link_reg" href="/fiji/">Фиджи</a></p><p><a class="link_reg" href="/philippines/">Филиппины</a></p><p><a class="link_reg" href="/finland/">Финляндия</a></p><p><a class="link_reg" href="/france/">Франция</a></p><p class="big_bukva">Х</p><p><a class="link_reg" href="/croatia/">Хорватия</a></p><p class="big_bukva">Ц</p><p><a class="link_reg" href="/tsar/">ЦАР</a></p><p class="big_bukva">Ч</p><p><a class="link_reg" href="/chad/">Чад</a></p><p><a class="link_reg" href="/montenegro/">Черногория</a></p><p><a class="link_reg" href="/czech-republic/">Чехия</a></p><p><a class="link_reg" href="/chile/">Чили</a></p><p class="big_bukva">Ш</p><p><a class="link_reg" href="/switzerland/">Швейцария</a></p><p><a class="link_reg" href="/sweden/">Швеция</a></p><p><a class="link_reg" href="/sri-lanka/">Шри-Ланка</a></p><p class="big_bukva">Э</p><p><a class="link_reg" href="/ecuador/">Эквадор</a></p><p><a class="link_reg" href="/equatorial-guinea/">Экваториальная Гвинея</a></p><p><a class="link_reg" href="/eritrea/">Эритрея</a></p><p><a class="link_reg" href="/estonia/">Эстония</a></p><p><a class="link_reg" href="/ethiopia/">Эфиопия</a></p><p class="big_bukva">Ю</p><p><a class="link_reg" href="/south-africa/">ЮАР</a></p><p><a class="link_reg" href="/south-korea/">Южная Корея</a></p><p class="big_bukva">Я</p><p><a class="link_reg" href="/jamaica/">Ямайка</a></p><p><a class="link_reg" href="/japan/">Япония</a></p></article>
+
+</div>
+</div>
+</div>
+</div>
+
+      <div class="col-xl-12 col-12 padding_left_all">
+        <div class="menuLimiter">
+        <div class="menu">
+        <a class="top_menu_a2" data-toggle="modal" data-target="#country" href="">Выберите страну (177)</a><style>.off_index_404_search {display: none;}</style>        </div>
+        </div>
+      </div>
+  </div>
+
+<!-- <div class="reg_between4"></div> -->
+<div class="row off_index_404_search menu_fix_left">
+      <div class="col-xl-12 col-12 padding_left_all">
+      <div class="menuLimiter">
+      <div class="menu">
+          <a href="https://bdex.ru/?type=info" class="menu01 top_menu_a">Инфо</a>
+          <a href="https://bdex.ru/" class="menu1 top_menu_a">Зарплаты</a>
+          <a href="https://bdex.ru/naselenie/" class="menu_5 top_menu_a">Население</a>
+          <a href="https://bdex.ru/price/" class="menu_6 top_menu_a">Цены</a>
+          <a href="https://bdex.ru/pensions/" class="menu_8 top_menu_a">Пенсии</a>
+          <a href="https://bdex.ru/vacancies/" class="menu2 top_menu_a">Вакансии</a>
+          <a href="https://bdex.ru/business/" class="menu3 top_menu_a">Бизнес</a>
+      </div>
+      </div>
+      </div>
+
+
+
+
+
+  
+</div>
+
+<div class="reg_between5"><hr></div>
+  <div class="row menu_fix_left">
+      <div class="col-xl-12 col-12 padding_left_all">
+        <div class="menuLimiter">
+        <div class="menu">
+          <a href="/ratings/" class="menu_ratings top_menu_a">Рейтинги</a>
+      <style>.menu_link02 {display: block;}</style>  </div>
+</div>
+</div>
+
+<div class="col-xl-12 padding_left_all">
+<style>.rat3 {background-color: var(--blue); color: #fff!important;}</style>
+
+
+<a class="top_menu_a rat1" href="/ratings/regions-salary/">Зарплаты в регионах</a><a class="top_menu_a rat2" href="/ratings/countries-salary/">Зарплаты в мире</a><a class="top_menu_a rat3" href="/ratings/cities-salary/">Зарплаты по городам России</a><a class="top_menu_a rat4" href="/ratings/regions-pensions/">Пенсии в регионах</a><a class="top_menu_a rat5" href="/ratings/countries-pensions/">Пенсии в мире</a><a class="top_menu_a rat6" href="/ratings/regions-life/">Продолжительности жизни в регионах</a><a class="top_menu_a rat7" href="/ratings/countries-life/">Продолжительности жизни в мире</a><a class="top_menu_a rat8" href="/ratings/countries-populations/">Население стран мира</a><a class="top_menu_a rat9" href="/ratings/cities-populations/">Крупнейшие города мира</a><a class="top_menu_a rat10" href="/ratings/countries-pensage/">Пенсионный возраст в мире</a>
+ 
+</div>
+</div>
+<div class="reg_between5"><hr></div>
+
+<a class="soc_icon_link" href="https://t.me/bdex_ru" target="_blank" onclick="ym(65561404,'reachGoal','tele_comp')">
+<img src="/template/img/tele_blue.svg" class="soc_icon">
+</a>
+
+<a class="soc_icon_link" href="https://vk.com/bdex_ru" target="_blank" onclick="ym(65561404,'reachGoal','vk_comp')">
+<img src="/template/img/vk_blue.svg" class="soc_icon">
+</a>
+
+<a class="soc_icon_link" href="/search/">
+<img src="/template/img/search_blue.svg" class="soc_icon">
+</a>
+
+<div class="soc_fix_height"></div>
+</div>
+</div>
+</div>
+<div class="fix_fix_top"></div>
+
+<div class="container">
+
+<div class="row">
+
+<div class="col-xl-8 col_left">
+
+<div class="row block_h1">
+<div class="col-xl-12 padding_left_all">
+<div class="row top_h1">
+  <div class="col-xl-9">
+      <h1>Средняя зарплата по городам России с населением от 100 000 человек</h1>
+  </div>
+
+    
+</div>
+</div>
+</div>
+<div class="row block_h1_1">
+	 <div class="col-xl-12 padding_left_all">
+		 	<p>Самые большие зарплаты в Анадыре, Москве, Салехарде, Южно-Сахалинске и Магадане,
+а самые низкие заработные платы во Владикавказе, Нальчике, Элисте, Майкопе и Саранске.</p>
+	 </div>
+</div>
+<div class="row ip_hide">
+ <div class="col-xl-12 not_padding_abv">
+		<div id="adv-1" class="ip_hide"><div id="yandex_rtb_R-A-732732-1-1" class="block_banner top_fix_heigth_top"></div></div>
+		<script>
+		if ( window.screen.width > 1200 )
+			 {
+					const container1 = `<div id="yandex_rtb_R-A-732732-1-1" class="block_banner top_fix_heigth_top"></div>`;
+					document.getElementById('adv-1').innerHTML = container1;
+
+ 			};
+		</script>
+</div>
+</div>
+
+<div class="ip_mob">
+
+  <div id="adv-2m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container2m = `<div id="yandex_rtb_R-A-732732-2-1" class="mobile_banner_fix300"></div>`;
+        document.getElementById('adv-2m').innerHTML = container2m;
+
+    };
+
+  </script>
+
+</div>
+<div class="row">
+	<div class="col-xl-12 padding_left_all">
+        <div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">1</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/anadyr.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/chukotskiy-avtonomnyy-okrug/anadyr/" target="_blank">Анадырь</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">129&nbsp;200&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">2</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/moscow.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/moscow/" target="_blank">Москва</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">113&nbsp;600&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">3</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/salehard.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/yamalo-neneckiy-avtonomnyy-okrug/salehard/" target="_blank">Салехард</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">106&nbsp;400&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">4</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/ujno-sahalinsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/sahalinskaya-oblast/ujno-sahalinsk/" target="_blank">Южно-Сахалинск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">99&nbsp;000&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">5</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/magadan.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/magadanskaya-oblast/magadan/" target="_blank">Магадан</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">95&nbsp;200&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">6</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/petropavlovsk-kamchatskiy.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kamchatskiy-kray/petropavlovsk-kamchatskiy/" target="_blank">Петропавловск-Камчатский</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">93&nbsp;600&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">7</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/hanty-mansiysk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/hanty-mansiyskiy-avtonomnyy-okrug-ugra/hanty-mansiysk/" target="_blank">Ханты-Мансийск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">88&nbsp;300&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">8</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/surgut.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/hanty-mansiyskiy-avtonomnyy-okrug-ugra/surgut/" target="_blank">Сургут</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">83&nbsp;400&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">9</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/naryan-mar.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/neneckiy-avtonomnyy-okrug/naryan-mar/" target="_blank">Нарьян-Мар</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">77&nbsp;900&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">10</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/saint-petersburg.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/saint-petersburg/" target="_blank">Санкт-Петербург</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">74&nbsp;400&nbsp;₽</span></div></div><div class="ip_mob">
+
+  <div id="adv-6m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container6m = `<div id="yandex_rtb_R-A-732732-6-1" class="mobile_banner_fix300"></div>`;
+        document.getElementById('adv-6m').innerHTML = container6m;
+     };
+
+  </script>
+
+</div>
+<div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">11</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/yakutsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-saha-yakutiya/yakutsk/" target="_blank">Якутск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">74&nbsp;400&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">12</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/murmansk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/murmanskaya-oblast/murmansk/" target="_blank">Мурманск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">73&nbsp;100&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">13</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/nijnevartovsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/hanty-mansiyskiy-avtonomnyy-okrug-ugra/nijnevartovsk/" target="_blank">Нижневартовск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">68&nbsp;400&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">14</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/vladivostok.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/primorskiy-kray/vladivostok/" target="_blank">Владивосток</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">62&nbsp;000&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">15</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/podolsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/moskovskaya-oblast/podolsk/" target="_blank">Подольск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">60&nbsp;300&nbsp;₽</span></div></div><div class="row ip_hide">
+ <div class="col-xl-12 not_padding_abv">
+		<div id="adv-2" class="ip_hide"><div id="yandex_rtb_R-A-732732-2-1" class="block_banner top_fix_heigth_top"></div></div>
+		<script>
+		if ( window.screen.width > 1200 )
+			 {
+					const container2 = `<div id="yandex_rtb_R-A-732732-2-1" class="block_banner top_fix_heigth_top"></div>`;
+					document.getElementById('adv-2').innerHTML = container2;
+
+					window.yaContextCb.push(()=>{
+					Ya.Context.AdvManager.render({
+					renderTo: 'yandex_rtb_R-A-732732-2',
+					blockId: 'R-A-732732-2'});});
+			};
+		</script>
+</div>
+</div>
+
+<div class="ip_mob">
+
+  <div id="adv-8m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container8m = `<div id="yandex_rtb_R-A-732732-8-1" class="mobile_banner_fix300"></div>`;
+        document.getElementById('adv-8m').innerHTML = container8m;
+
+				window.yaContextCb.push(()=>{
+				Ya.Context.AdvManager.render({
+				renderTo: 'yandex_rtb_R-A-732732-8',
+				blockId: 'R-A-732732-8'});});
+    };
+
+  </script>
+
+</div>
+<div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">16</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/tumen.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/tumenskaya-oblast/tumen/" target="_blank">Тюмень</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">60&nbsp;100&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">17</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/habarovsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/habarovskiy-kray/habarovsk/" target="_blank">Хабаровск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">59&nbsp;600&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">18</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/krasnoyarsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/krasnoyarskiy-kray/krasnoyarsk/" target="_blank">Красноярск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">54&nbsp;600&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">19</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/irkutsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/irkutskaya-oblast/irkutsk/" target="_blank">Иркутск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">53&nbsp;800&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">20</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/ekaterinburg.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/sverdlovskaya-oblast/ekaterinburg/" target="_blank">Екатеринбург</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">53&nbsp;400&nbsp;₽</span></div></div><div class="ip_mob">
+
+  <div id="adv-2_1m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container2_1m = `<div id="yandex_rtb_R-A-732732-2-2" class="mobile_banner_fix300"></div>`;
+        document.getElementById('adv-2_1m').innerHTML = container2_1m;
+    };
+
+  </script>
+
+</div>
+<div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">21</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/arhangelsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/arhangelskaya-oblast/arhangelsk/" target="_blank">Архангельск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">53&nbsp;100&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">22</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/bratsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/irkutskaya-oblast/bratsk/" target="_blank">Братск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">52&nbsp;900&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">23</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/komsomolsk-na-amure.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/habarovskiy-kray/komsomolsk-na-amure/" target="_blank">Комсомольск-на-Амуре</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">51&nbsp;300&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">24</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/cherepovec.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/vologodskaya-oblast/cherepovec/" target="_blank">Череповец</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">50&nbsp;500&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">25</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/tomsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/tomskaya-oblast/tomsk/" target="_blank">Томск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">50&nbsp;300&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">26</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/blagoveshhensk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/amurskaya-oblast/blagoveshhensk/" target="_blank">Благовещенск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">50&nbsp;200&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">27</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/syktyvkar.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-komi/syktyvkar/" target="_blank">Сыктывкар</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">49&nbsp;500&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">28</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/petrozavodsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-kareliya/petrozavodsk/" target="_blank">Петрозаводск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">48&nbsp;800&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">29</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/ufa.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-bashkortostan/ufa/" target="_blank">Уфа</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">48&nbsp;300&nbsp;₽</span></div></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">30</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/novosibirsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/novosibirskaya-oblast/novosibirsk/" target="_blank">Новосибирск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">48&nbsp;200&nbsp;₽</span></div></div></div>
+</div>
+
+</div>
+<div class="col-xl-4">
+<div class="right_banner_notstick ip_hide">
+  <div id="adv-8"><div id="yandex_rtb_R-A-732732-8-1" class="right_banner1_1"></div></div>
+  <script>
+  if ( window.screen.width > 1200 )
+     {
+        const container8 = `<div id="yandex_rtb_R-A-732732-8-1" class="right_banner1_1"></div>`;
+        document.getElementById('adv-8').innerHTML = container8;
+    };
+  </script>
+</div>
+
+<div class="right_banner_smi2 ip_hide">
+
+  <div id="adv-6"><div id="yandex_rtb_R-A-732732-6-1"></div></div>
+  <script>
+  if ( window.screen.width > 1200 )
+     {
+        const container6 = `<div id="yandex_rtb_R-A-732732-6-1"></div>`;
+        document.getElementById('adv-6').innerHTML = container6;
+    };
+  </script>
+
+
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-xl-8 col_left2">
+
+<div class="row ip_hide">
+ <div class="col-xl-12 not_padding_abv">
+		<div id="adv-6_1" class="ip_hide"><div id="yandex_rtb_R-A-732732-6-2" class="block_banner top_fix_heigth_top"></div></div>
+		<script>
+		if ( window.screen.width > 1200 )
+			 {
+					const container6_1 = `<div id="yandex_rtb_R-A-732732-6-2" class="block_banner top_fix_heigth_top"></div>`;
+					document.getElementById('adv-6_1').innerHTML = container6_1;
+			};
+		</script>
+</div>
+</div>
+
+<div class="ip_mob">
+
+  <div id="adv-1m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container1m = `<div id="yandex_rtb_R-A-732732-1-1" class="mobile_banner_fix300"></div>`;
+        document.getElementById('adv-1m').innerHTML = container1m;
+    };
+
+  </script>
+
+</div>
+
+<div class="row">
+ 	<div class="col-xl-12 padding_left_all">
+        <div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">31</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/nijniy-novgorod.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/nijegorodskaya-oblast/nijniy-novgorod/" target="_blank">Нижний Новгород</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">48&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">32</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/krasnodar.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/krasnodarskiy-kray/krasnodar/" target="_blank">Краснодар</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">48&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">33</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/novorossiysk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/krasnodarskiy-kray/novorossiysk/" target="_blank">Новороссийск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">47&nbsp;900&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">34</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/chita.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/zabaykalskiy-kray/chita/" target="_blank">Чита</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">47&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">35</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kazan.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-tatarstan/kazan/" target="_blank">Казань</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">47&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">36</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kemerovo.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kemerovskaya-oblast/kemerovo/" target="_blank">Кемерово</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">47&nbsp;200&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">37</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kyzyl.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-tyva/kyzyl/" target="_blank">Кызыл</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">46&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">38</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/novokuzneck.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kemerovskaya-oblast/novokuzneck/" target="_blank">Новокузнецк</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">46&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">39</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/perm.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/permskiy-kray/perm/" target="_blank">Пермь</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">46&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">40</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/angarsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/irkutskaya-oblast/angarsk/" target="_blank">Ангарск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">45&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="ip_mob">
+
+  <div id="adv-8_1m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container8_1m = `<div id="yandex_rtb_R-A-732732-8-2" class="mobile_banner_fix300"></div>`;
+        document.getElementById('adv-8_1m').innerHTML = container8_1m;
+    };
+
+  </script>
+
+</div>
+<div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">41</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kaluga.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kalujskaya-oblast/kaluga/" target="_blank">Калуга</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">45&nbsp;400&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">42</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/abakan.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-hakasiya/abakan/" target="_blank">Абакан</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">45&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">43</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/rostov-na-donu.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/rostovskaya-oblast/rostov-na-donu/" target="_blank">Ростов-на-Дону</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">45&nbsp;200&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">44</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/magnitogorsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/chelyabinskaya-oblast/magnitogorsk/" target="_blank">Магнитогорск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">44&nbsp;900&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">45</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/samara.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/samarskaya-oblast/samara/" target="_blank">Самара</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">44&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">46</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/tula.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/tulskaya-oblast/tula/" target="_blank">Тула</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">44&nbsp;100&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">47</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kaliningrad.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kaliningradskaya-oblast/kaliningrad/" target="_blank">Калининград</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">43&nbsp;700&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">48</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/sochi.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/krasnodarskiy-kray/sochi/" target="_blank">Сочи</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">43&nbsp;700&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">49</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/birobidjan.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/evreyskaya-avtonomnaya-oblast/birobidjan/" target="_blank">Биробиджан</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">43&nbsp;200&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">50</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/ulan-ude.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-buryatiya/ulan-ude/" target="_blank">Улан-Удэ</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">42&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row ip_hide">
+ <div class="col-xl-12 not_padding_abv">
+		<div id="adv-2_1" class="ip_hide"><div id="yandex_rtb_R-A-732732-2-2" class="block_banner top_fix_heigth_top"></div></div>
+		<script>
+		if ( window.screen.width > 1200 )
+			 {
+					const container2_1 = `<div id="yandex_rtb_R-A-732732-2-2" class="block_banner top_fix_heigth_top"></div>`;
+					document.getElementById('adv-2_1').innerHTML = container2_1;
+			};
+		</script>
+</div>
+</div>
+
+<div class="ip_mob">
+
+  <div id="adv-6_1m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container6_1m = `<div id="yandex_rtb_R-A-732732-6-2" class="mobile_banner_fix300"></div>`;
+        document.getElementById('adv-6_1m').innerHTML = container6_1m;
+    };
+
+  </script>
+
+</div>
+<div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">51</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/tver.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/tverskaya-oblast/tver/" target="_blank">Тверь</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">42&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">52</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/yaroslavl.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/yaroslavskaya-oblast/yaroslavl/" target="_blank">Ярославль</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">42&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">53</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/vologda.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/vologodskaya-oblast/vologda/" target="_blank">Вологда</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">42&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">54</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/chelyabinsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/chelyabinskaya-oblast/chelyabinsk/" target="_blank">Челябинск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">42&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">55</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/lipeck.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/lipeckaya-oblast/lipeck/" target="_blank">Липецк</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">42&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">56</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/omsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/omskaya-oblast/omsk/" target="_blank">Омск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">41&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">57</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/orenburg.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/orenburgskaya-oblast/orenburg/" target="_blank">Оренбург</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">41&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">58</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/voronej.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/voronejskaya-oblast/voronej/" target="_blank">Воронеж</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">41&nbsp;400&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">59</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/ijevsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/udmurtskaya-respublika/ijevsk/" target="_blank">Ижевск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">40&nbsp;800&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">60</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/ryazan.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/ryazanskaya-oblast/ryazan/" target="_blank">Рязань</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">40&nbsp;700&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">61</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/magas.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-ingushetiya/magas/" target="_blank">Магас</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">40&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">62</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/gorno-altaysk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-altay-gornyy-altay/gorno-altaysk/" target="_blank">Горно-Алтайск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">40&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">63</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/velikiy-novgorod.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/novgorodskaya-oblast/velikiy-novgorod/" target="_blank">Великий Новгород</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">40&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">64</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/naberejnye-chelny.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-tatarstan/naberejnye-chelny/" target="_blank">Набережные Челны</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">39&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">65</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/belgorod.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/belgorodskaya-oblast/belgorod/" target="_blank">Белгород</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">39&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">66</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/nijniy-tagil.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/sverdlovskaya-oblast/nijniy-tagil/" target="_blank">Нижний Тагил</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">39&nbsp;200&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">67</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/saratov.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/saratovskaya-oblast/saratov/" target="_blank">Саратов</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">39&nbsp;100&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">68</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/tolyatti.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/samarskaya-oblast/tolyatti/" target="_blank">Тольятти</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">38&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">69</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/sevastopol.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/sevastopol/" target="_blank">Севастополь</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">38&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">70</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/simferopol.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-krym/simferopol/" target="_blank">Симферополь</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">38&nbsp;400&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="ip_mob">
+
+  <div id="adv-8_1m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container8_1m = `<div id="yandex_rtb_R-A-732732-8-2" class="mobile_banner_fix300"></div>`;
+        document.getElementById('adv-8_1m').innerHTML = container8_1m;
+    };
+
+  </script>
+
+</div>
+<div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">71</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/vladimir.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/vladimirskaya-oblast/vladimir/" target="_blank">Владимир</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">38&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">72</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/stavropol.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/stavropolskiy-kray/stavropol/" target="_blank">Ставрополь</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">38&nbsp;100&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">73</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/astrahan.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/astrahanskaya-oblast/astrahan/" target="_blank">Астрахань</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">38&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">74</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/barnaul.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/altayskiy-kray/barnaul/" target="_blank">Барнаул</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">37&nbsp;400&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">75</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/volgograd.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/volgogradskaya-oblast/volgograd/" target="_blank">Волгоград</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">37&nbsp;400&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">76</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kirov.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kirovskaya-oblast/kirov/" target="_blank">Киров</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">36&nbsp;900&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">77</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/dzerjinsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/nijegorodskaya-oblast/dzerjinsk/" target="_blank">Дзержинск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">36&nbsp;900&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">78</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kostroma.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kostromskaya-oblast/kostroma/" target="_blank">Кострома</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">36&nbsp;800&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">79</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/cheboksary.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/chuvashskaya-respublika/cheboksary/" target="_blank">Чебоксары</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">36&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">80</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/penza.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/penzenskaya-oblast/penza/" target="_blank">Пенза</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">35&nbsp;800&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">81</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kurgan.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kurganskaya-oblast/kurgan/" target="_blank">Курган</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">35&nbsp;800&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">82</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/ulyanovsk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/ulyanovskaya-oblast/ulyanovsk/" target="_blank">Ульяновск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">35&nbsp;800&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">83</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/smolensk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/smolenskaya-oblast/smolensk/" target="_blank">Смоленск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">35&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">84</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/pskov.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/pskovskaya-oblast/pskov/" target="_blank">Псков</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">35&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">85</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/bryansk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/bryanskaya-oblast/bryansk/" target="_blank">Брянск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">35&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">86</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/sterlitamak.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-bashkortostan/sterlitamak/" target="_blank">Стерлитамак</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">35&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">87</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/taganrog.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/rostovskaya-oblast/taganrog/" target="_blank">Таганрог</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">34&nbsp;700&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">88</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/kursk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kurskaya-oblast/kursk/" target="_blank">Курск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">34&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">89</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/mahachkala.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-dagestan/mahachkala/" target="_blank">Махачкала</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">34&nbsp;400&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">90</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/orel.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/orlovskaya-oblast/orel/" target="_blank">Орёл</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">34&nbsp;100&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">91</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/ivanovo.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/ivanovskaya-oblast/ivanovo/" target="_blank">Иваново</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">33&nbsp;700&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">92</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/yoshkar-ola.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-mariy-el/yoshkar-ola/" target="_blank">Йошкар-Ола</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">33&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">93</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/tambov.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/tambovskaya-oblast/tambov/" target="_blank">Тамбов</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">33&nbsp;100&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">94</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/cherkessk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-karachaevo-cherkessiya/cherkessk/" target="_blank">Черкесск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">33&nbsp;100&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">95</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/groznyy.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/chechenskaya-respublika/groznyy/" target="_blank">Грозный</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">33&nbsp;000&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">96</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/saransk.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-mordoviya/saransk/" target="_blank">Саранск</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">32&nbsp;500&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">97</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/maykop.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-adygeya/maykop/" target="_blank">Майкоп</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">32&nbsp;300&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">98</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/elista.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-kalmykiya/elista/" target="_blank">Элиста</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">31&nbsp;700&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">99</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/nalchik.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/kabardino-balkarskaya-respublika/nalchik/" target="_blank">Нальчик</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">31&nbsp;600&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div><div class="row block_rating"><div class="col-xl-1 col-2 text-center"><p class="reg_num">100</p></div><div class="col-xl-1 col-2"><img class="img_rating" src="/img/gerb/city/vladikavkaz.jpg"></div><div class="col-xl-7 col-4"><div class="reg_name"><a href="/respublika-severnaya-osetiya-alaniya/vladikavkaz/" target="_blank">Владикавказ</a></div></div><div class="col-xl-3 col-4 text-right"><span class="reg_salary">31&nbsp;200&nbsp;₽</span></div></div> <div class="col-xl-12 reg_row_line"></div></div>
+</div>
+
+</div>
+<div class="col-xl-4">
+<div class="right_banner1 ip_hide">
+
+  <div id="adv-8_1"><div id="yandex_rtb_R-A-732732-8-2"></div></div>
+  <script>
+  if ( window.screen.width > 1200 )
+     {
+        const container8_1 = `<div id="yandex_rtb_R-A-732732-8-2"></div>`;
+        document.getElementById('adv-8_1').innerHTML = container8_1;
+
+    };
+  </script>
+
+</div>
+</div>
+</div>
+</div>
+<div class="fix_maps_index"></div>
+<div class="container">
+<div class="row">
+  <div class="col-xl-12 text-center">
+<div class="row ip_hide">
+ <div class="col-xl-12 not_padding_abv">
+		<div id="adv-1_1" class="ip_hide"><div id="yandex_rtb_R-A-732732-1-2" class="block_banner_footer top_fix_heigth_top"></div></div>
+		<script>
+		if ( window.screen.width > 1200 )
+			 {
+					const container1_1 = `<div id="yandex_rtb_R-A-732732-1-2" class="block_banner_footer top_fix_heigth_top"></div>`;
+					document.getElementById('adv-1_1').innerHTML = container1_1;
+			};
+		</script>
+</div>
+</div>
+
+<div class="ip_mob">
+
+  <div id="adv-1_1m"></div>
+  <script>
+  if ( window.screen.width < 1200 )
+     {
+        const container1_1m = `<div id="yandex_rtb_R-A-732732-1-2" class="mobile_banner_fix300 block_banner_footer_mob"></div>`;
+        document.getElementById('adv-1_1m').innerHTML = container1_1m;
+    };
+
+  </script>
+
+</div>
+</div>
+</div>
+</div>
+<div class="container-fluid footer_fon">
+<div class="container footer_fon">
+<div class="row footer">
+  <div class="col-xl-8 footer_fix_top padding_left_all">
+  <p class="footer_alert">
+  Обратите внимание! Данные сайта являются приблизительными. Они собираются из различных источников и в том числе большая часть данных прислана и редактируется посетителями сайта. Данные не являются официальными и использовать их нигде не рекомендуется.  </p>
+  <p><a class="changes_link top_menu_a_footer changes_link_back" data-toggle="modal" data-target="#changes" href="">Предложить&nbsp;изменения</a></p><br>
+  <p class="footer_copy"><a class="footer_link" href="#" data-toggle="modal" data-target="#languages">
+    Российский рубль ₽, русский язык  </a>
+  <br>
+   <a href="/law/ru.html" target="_blank" class="footer_link">Политика конфиденциальности</a><br>
+    Copyright © BDEX 2019-2023<br>bdeeex@gmail.com<br>
+  </p></div>
+
+</div>
+</div>
+</div>
+
+<div class="modal fade" id="languages" tabindex="-1" role="dialog" aria-labelledby="languages" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="exampleModalLabel">Страна, валюта, язык</h5>
+<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body">
+
+<article class="lang_select_article">
+  <a class="dropdown-item" href="https://bdeex.com/"><img src="/img/gerb/country/usa.jpg" class="lang_select_2">  USA, US dollar $, English </a><a class="dropdown-item" href="https://bdeex.com/en-gb/"><img src="/img/gerb/country/great-britain.jpg" class="lang_select_2"> Great Britain, Pound Sterling £, English </a><a class="dropdown-item" href="https://bdeex.com/en-ca/"><img src="/img/gerb/country/canada.jpg" class="lang_select_2"> Canada, Canadian Dollar CA$, English </a><a class="dropdown-item" href="https://bdeex.com/en-au/"><img src="/img/gerb/country/australia.jpg" class="lang_select_2"> Australia, Australian Dollar A$, English </a><a class="dropdown-item" href="https://bdeex.com/de/"><img src="/img/gerb/country/germany.jpg" class="lang_select_2"> Deutschland, Euro €, Deutsch </a><a class="dropdown-item" href="https://bdeex.com/fr/"><img src="/img/gerb/country/france.jpg" class="lang_select_2"> France, Euro €, Français </a><a class="dropdown-item" href="https://bdeex.com/it/"><img src="/img/gerb/country/italy.jpg" class="lang_select_2"> Italia, Euro €, Italiano </a><a class="dropdown-item" href="https://bdeex.com/es/"><img src="/img/gerb/country/spain.jpg" class="lang_select_2"> España, Euro €, Español </a><a class="dropdown-item" href="https://bdeex.com/es-mx/"><img src="/img/gerb/country/mexico.jpg" class="lang_select_2"> México, Peso mexicano $, Español </a><a class="dropdown-item" href="https://bdeex.com/es-ar/"><img src="/img/gerb/country/argentina.jpg" class="lang_select_2"> Argentina, Peso argentino Arg$, Español </a><a class="dropdown-item" href="https://bdeex.com/es-ve/"><img src="/img/gerb/country/venezuela.jpg" class="lang_select_2"> Venezuela, Bolívar venezolano Bs, Español </a><a class="dropdown-item" href="https://bdeex.com/es-co/"><img src="/img/gerb/country/colombia.jpg" class="lang_select_2"> Colombia, Peso colombiano Col$, Español </a><a class="dropdown-item" href="https://bdeex.com/es-pe/"><img src="/img/gerb/country/peru.jpg" class="lang_select_2"> Perú, Sal peruana S/, Español </a><a class="dropdown-item" href="https://bdeex.com/es-cl/"><img src="/img/gerb/country/chile.jpg" class="lang_select_2"> Chile, Peso chileno $, Español </a><a class="dropdown-item" href="https://bdeex.com/es-ec/"><img src="/img/gerb/country/ecuador.jpg" class="lang_select_2"> Ecuador, US dollar $, Español </a><a class="dropdown-item" href="https://bdeex.com/pt/"><img src="/img/gerb/country/portugal.jpg" class="lang_select_2"> Portugal, Euro €, Português </a><a class="dropdown-item" href="https://bdeex.com/pt-br/"><img src="/img/gerb/country/brazil.jpg" class="lang_select_2"> Brasil, Real brasileño R$, Português </a><a class="dropdown-item" href="https://bdex.ru/"><img src="/img/gerb/country/russia.jpg" class="lang_select_2"> Россия, Российский рубль ₽, русский язык </a><a class="dropdown-item" href="https://bdeex.com/ua/"><img src="/img/gerb/country/ukraine.jpg" class="lang_select_2"> Україна, Українська гривня ₴, українська мова </a><a class="dropdown-item" href="https://bdeex.com/pl/"><img src="/img/gerb/country/poland.jpg" class="lang_select_2"> Polska, Polski złoty zł, Polski </a><a class="dropdown-item" href="https://bdeex.com/cz/"><img src="/img/gerb/country/czech-republic.jpg" class="lang_select_2"> Česko, Koruna česká Kč, Čeština </a><a class="dropdown-item" href="https://bdeex.com/sr-rs/"><img src="/img/gerb/country/serbia.jpg" class="lang_select_2"> Србија, Српски динар din, Српски језик </a><a class="dropdown-item" href="https://bdeex.com/sr-me/"><img src="/img/gerb/country/montenegro.jpg" class="lang_select_2"> Црна Гора, Евро €, Српски језик </a><a class="dropdown-item" href="https://bdeex.com/sr-ba/"><img src="/img/gerb/country/bosnia-and-herzegovina.jpg" class="lang_select_2"> Босна и Херцеговина, KM, Српски језик </a><a class="dropdown-item" href="https://bdeex.com/sr-hr/"><img src="/img/gerb/country/croatia.jpg" class="lang_select_2"> Хрватска, Евро €, Српски језик </a></article>
+</div>
+</div>
+</div>
+</div>
+
+
+<script src="/js/jquery-3.6.0.min.js"></script>
+<script src="/js/chart.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>-->
+<script src="/inc/js/bootstrap.js"></script>
+<script src="/inc/js/main.js"></script>
+<script>var h1 = 'Средняя зарплата по городам России с населением от 100 000 человек'; lang = 'ru'; hreflang = 'ru-RU';</script>
+<!-- Yandex.RTB
+<script>window.yaContextCb=window.yaContextCb||[]</script>
+<script src="https://yandex.ru/ads/system/context.js" async></script>-->
+
+<script>
+$(document).ready(function() {
+
+if ( $(window).width() < 1200 )
+   {
+     window.yaContextCb=window.yaContextCb||[]
+     $.getScript('https://yandex.ru/ads/system/context.js');
+
+     setTimeout(function() {
+
+        window.yaContextCb.push(()=>{
+          Ya.Context.AdvManager.render({
+            type: 'fullscreen',
+            platform: 'touch',
+            blockId: 'R-A-732732-170'})});
+
+      }, 18000);
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: 'yandex_rtb_R-A-732732-2-1',
+          blockId: 'R-A-732732-2'});});
+
+
+     var event_status = false; // Статус события (ещё не произошло)
+     window.addEventListener("load", function() {
+    // Страница загрузилась полностью
+    ["scroll"].forEach(function(event) {
+     window.addEventListener(event, function() {
+     // Произошло нужное событие (mouseover, click или scroll) с объектом window
+     if(!event_status)
+     {
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: 'yandex_rtb_R-A-732732-6-1',
+          blockId: 'R-A-732732-6'});});
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: 'yandex_rtb_R-A-732732-8-1',
+          blockId: 'R-A-732732-8'});});
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: "yandex_rtb_R-A-732732-1-1",
+          blockId: "R-A-732732-1"})})
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: "yandex_rtb_R-A-732732-2-2",
+          blockId: "R-A-732732-2"})})
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: "yandex_rtb_R-A-732732-6-2",
+          blockId: "R-A-732732-6"})})
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: "yandex_rtb_R-A-732732-8-2",
+          blockId: "R-A-732732-8"})})
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: "yandex_rtb_R-A-732732-1-2",
+          blockId: "R-A-732732-1"})});
+
+      event_status = true; // Статус события (произошло)
+      }},{once: true});}); });
+    }
+    else
+    {
+      window.yaContextCb=window.yaContextCb||[]
+      $.getScript('https://yandex.ru/ads/system/context.js');
+
+      window.yaContextCb.push(()=>{
+        Ya.Context.AdvManager.render({
+          renderTo: 'yandex_rtb_R-A-732732-1-1',
+          blockId: 'R-A-732732-1'});});
+
+       window.yaContextCb.push(()=>{
+         Ya.Context.AdvManager.render({
+           renderTo: 'yandex_rtb_R-A-732732-8-1',
+           blockId: 'R-A-732732-8'});});
+
+       window.yaContextCb.push(()=>{
+         Ya.Context.AdvManager.render({
+           renderTo: 'yandex_rtb_R-A-732732-6-1',
+           blockId: 'R-A-732732-6'});});
+
+       window.yaContextCb.push(()=>{
+         Ya.Context.AdvManager.render({
+           renderTo: "yandex_rtb_R-A-732732-2-1",
+           blockId: "R-A-732732-2"})})
+
+       window.yaContextCb.push(()=>{
+         Ya.Context.AdvManager.render({
+           renderTo: "yandex_rtb_R-A-732732-6-2",
+           blockId: "R-A-732732-6"})})
+
+       window.yaContextCb.push(()=>{
+         Ya.Context.AdvManager.render({
+           renderTo: "yandex_rtb_R-A-732732-8-2",
+           blockId: "R-A-732732-8"})})
+
+       window.yaContextCb.push(()=>{
+         Ya.Context.AdvManager.render({
+           renderTo: "yandex_rtb_R-A-732732-2-2",
+           blockId: "R-A-732732-2"})})
+
+       window.yaContextCb.push(()=>{
+         Ya.Context.AdvManager.render({
+           renderTo: "yandex_rtb_R-A-732732-1-2",
+           blockId: "R-A-732732-1"})});
+        };
+});
+
+</script>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+   m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+   ym(65561404, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true
+   });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/65561404" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+</body></html>
